@@ -18,11 +18,13 @@ type Todo struct {
 type Items []Item
 
 type Item struct {
-	ID      string `json:"id"`
-	Title   string `json:"title"`
-	RegDate string `json:"reg_date"`
-	Done    bool   `json:"done"`
+	ID      string  `json:"id"`
+	Title   string  `json:"title"`
+	RegDate RegDate `json:"reg_date"`
+	Done    bool    `json:"done"`
 }
+
+type RegDate string
 
 func New(f string) (*Todo, error) {
 	db, err := leveldb.OpenFile(f, nil)
@@ -47,7 +49,7 @@ func (t *Todo) Add(key, title string) error {
 	item := Item{
 		ID:      guid.String(),
 		Title:   title,
-		RegDate: fmt.Sprint(time.Now().UnixNano()),
+		RegDate: RegDate(fmt.Sprint(time.Now().UnixNano())),
 		Done:    false,
 	}
 	items = append(items, item)
@@ -143,13 +145,21 @@ func (i Items) String(verbose bool) string {
 		}
 		message += check + "] " + v.Title
 		if verbose {
-			i64, _ := strconv.ParseInt(v.RegDate, 10, 64)
+			i64, _ := strconv.ParseInt(string(v.RegDate), 10, 64)
 			t := time.Unix(i64/int64(time.Second), 0)
 			message += " " + v.ID + " " + t.Format("2006/01/02 15:04:05")
 		}
 		messages = append(messages, message)
 	}
 	return strings.Join(messages, "\n")
+}
+
+func (rd RegDate) Time() (time.Time, error) {
+	i64, err := strconv.ParseInt(string(rd), 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Unix(i64/int64(time.Second), 0), nil
 }
 
 func delete(s Items, i int) Items {
