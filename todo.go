@@ -3,6 +3,7 @@ package todo
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -120,6 +121,7 @@ func (t *Todo) Delete(key, id string) error {
 }
 
 func (t *Todo) register(key string, items Items) error {
+	items.doneSort()
 	jsonItems, err := json.Marshal(items)
 	if err != nil {
 		return err
@@ -131,6 +133,26 @@ func (t *Todo) register(key string, items Items) error {
 	}
 
 	return nil
+}
+
+func (items *Items) doneSort() {
+	df := make(Items, 0, len(*items)) // Done is false
+	dt := make(Items, 0, len(*items)) // Done is true
+	for _, v := range *items {
+		if v.Done {
+			dt = append(dt, v)
+			continue
+		}
+		df = append(df, v)
+	}
+	// sort slice by RegDate
+	sort.Slice(df, func(i, j int) bool {
+		return df[i].RegDate < df[j].RegDate
+	})
+	sort.Slice(dt, func(i, j int) bool {
+		return dt[i].RegDate < dt[j].RegDate
+	})
+	*items = append(df, dt...)
 }
 
 func (rd RegDate) Time() (time.Time, error) {
