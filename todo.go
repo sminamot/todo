@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/rs/xid"
@@ -132,26 +131,6 @@ func (t *Todo) register(key string, items Items) error {
 	}
 
 	return nil
-}
-
-func (i Items) String(verbose bool) string {
-	messages := make([]string, 0, len(i))
-
-	for _, v := range i {
-		message := "- ["
-		check := " "
-		if v.Done {
-			check = "X"
-		}
-		message += check + "] " + v.Title
-		if verbose {
-			i64, _ := strconv.ParseInt(string(v.RegDate), 10, 64)
-			t := time.Unix(i64/int64(time.Second), 0)
-			message += " " + v.ID + " " + t.Format("2006/01/02 15:04:05")
-		}
-		messages = append(messages, message)
-	}
-	return strings.Join(messages, "\n")
 }
 
 func (rd RegDate) Time() (time.Time, error) {
