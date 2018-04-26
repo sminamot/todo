@@ -76,6 +76,28 @@ func (t *Todo) Get(key string) (Items, error) {
 	return items, nil
 }
 
+func (t *Todo) ChangeDone(key, id string) error {
+	items, err := t.Get(key)
+	if err != nil {
+		return err
+	}
+
+	for i, v := range items {
+		if v.ID == id {
+			items[i].Done = !items[i].Done
+			if err := t.register(key, items); err != nil {
+				return err
+			}
+			break
+		}
+		if i == len(items)-1 {
+			return nil
+		}
+	}
+
+	return nil
+}
+
 func (t *Todo) Done(key, id string, done bool) error {
 	items, err := t.Get(key)
 	if err != nil {
@@ -118,6 +140,26 @@ func (t *Todo) Delete(key, id string) error {
 	}
 
 	return nil
+}
+
+func (t *Todo) DeleteAll(key string) error {
+	return t.db.Delete([]byte(key), nil)
+}
+
+func (t *Todo) DeleteDoneAll(key string) error {
+	items, err := t.Get(key)
+	if err != nil {
+		return err
+	}
+
+	after := make(Items, 0, len(items))
+	for _, v := range items {
+		if v.Done {
+			continue
+		}
+		after = append(after, v)
+	}
+	return t.register(key, after)
 }
 
 func (t *Todo) register(key string, items Items) error {
