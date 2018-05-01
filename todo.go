@@ -54,7 +54,7 @@ func (t *Todo) Add(key, title string) error {
 	}
 	items = append(items, item)
 
-	err = t.register(key, items)
+	err = t.Register(key, items)
 
 	return nil
 }
@@ -85,7 +85,7 @@ func (t *Todo) ChangeDone(key, id string) error {
 	for i, v := range items {
 		if v.ID == id {
 			items[i].Done = !items[i].Done
-			if err := t.register(key, items); err != nil {
+			if err := t.Register(key, items); err != nil {
 				return err
 			}
 			break
@@ -107,7 +107,7 @@ func (t *Todo) Done(key, id string, done bool) error {
 	for i, v := range items {
 		if v.ID == id {
 			items[i].Done = done
-			if err := t.register(key, items); err != nil {
+			if err := t.Register(key, items); err != nil {
 				return err
 			}
 			break
@@ -129,7 +129,7 @@ func (t *Todo) Delete(key, id string) error {
 	for i, v := range items {
 		if v.ID == id {
 			items = delete(items, i)
-			if err := t.register(key, items); err != nil {
+			if err := t.Register(key, items); err != nil {
 				return err
 			}
 			break
@@ -159,10 +159,10 @@ func (t *Todo) DeleteDoneAll(key string) error {
 		}
 		after = append(after, v)
 	}
-	return t.register(key, after)
+	return t.Register(key, after)
 }
 
-func (t *Todo) register(key string, items Items) error {
+func (t *Todo) Register(key string, items Items) error {
 	items.doneSort()
 	jsonItems, err := json.Marshal(items)
 	if err != nil {
